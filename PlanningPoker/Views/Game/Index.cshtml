@@ -65,7 +65,7 @@
         <h3>@Model.Name</h3>
         Participants (<span data-bind="text: players().length"></span>)
         <div data-bind="foreach: players">
-            <div class="clearfix">
+            <div class="clearfix" style="white-space: nowrap">
                 <i style="padding-right: 3px; color:green" class="pull-left glyphicon glyphicon-ok" data-bind="visible: CurrentVote() != null"></i>
                 <div class="pull-left" style="padding-right: 3px;">
                     <span data-bind="text: Name"></span>&nbsp;<span data-bind="visible: IsHost">(Host)</span><br/>
@@ -75,7 +75,7 @@
         </div>
         <div>
             <h3>Chat</h3>
-            Coming soon...
+            Coming soon...?
         </div>
     </div>
 </div>
