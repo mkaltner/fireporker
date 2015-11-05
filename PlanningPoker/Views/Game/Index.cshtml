@@ -23,8 +23,8 @@
         <div class="panel panel-default">
             <div class="panel-heading">Current Votes</div>
             <div class="panel-body">
-                <div data-bind="foreach: players">
-                    <div data-bind="visible: CurrentVote() != null" style="display:none" class="col-xs-2">
+                <div data-bind="foreach: players" class="clearfix">
+                    <div data-bind="visible: CurrentVote() != null" style="display: none; padding-right: 15px;" class="pull-left">
                         <img src="~/Content/cardback.jpg" height="150" data-bind="visible: $root.allVoted() == false && Id() != myPlayer.Id()" />
                         <div data-bind="text: CurrentVote(), visible: $root.allVoted() == true || Id() == myPlayer.Id()" class="card_visible"></div>
                         <br />
@@ -34,7 +34,7 @@
             </div>
         </div>
 
-        <div class="panel panel-default">
+        <div class="panel panel-default" data-bind="visible: $root.allVoted() == false">
             <div class="panel-heading">Select your estimate</div>
             <div class="panel-body">
                 <button type="button" class="btn btn-default" data-bind="click: submitVote.bind($data,0.5)">0.5</button>
@@ -54,8 +54,9 @@
         <div class="panel panel-default" data-bind="visible: myPlayer.IsHost() == true">
             <div class="panel-heading">Host tools</div>
             <div class="panel-body form-inline">
-                <label class="control-label" for="average">Average:</label>
-                <input id="average" type="text" data-bind="value: voteAverage" width="3" disabled="disabled" style="width: 75px;" class="form-control" />
+                <input type="checkbox" id="showMedian" data-bind="checked: showMedian"/>
+                <label class="control-label" for="showMedian">Median</label>
+                <input id="median" type="text" data-bind="value: voteMedian, visible: showMedian" width="3" disabled="disabled" style="width: 55px;" class="form-control"/>
                 <button type="button" class="btn btn-default" data-bind="click: clearVotes">Clear Votes</button>
             </div>
         </div>
@@ -64,8 +65,13 @@
         <h3>@Model.Name</h3>
         Participants (<span data-bind="text: players().length"></span>)
         <div data-bind="foreach: players">
-            <i class="glyphicon glyphicon-check" data-bind="visible: CurrentVote() != null"></i>
-            <span data-bind="text: Name"></span>&nbsp;<span data-bind="visible: IsHost" style="display:none">(Host)</span><br />
+            <div class="clearfix">
+                <i style="padding-right: 3px; color:green" class="pull-left glyphicon glyphicon-ok" data-bind="visible: CurrentVote() != null"></i>
+                <div class="pull-left" style="padding-right: 3px;">
+                    <span data-bind="text: Name"></span>&nbsp;<span data-bind="visible: IsHost">(Host)</span><br/>
+                </div>
+                <a href="#" data-bind="click: $root.removePlayer, visible: myPlayer.IsHost() && !IsHost()" style="color: red;"><i class="glyphicon glyphicon-remove"></i></a>
+            </div>
         </div>
         <div>
             <h3>Chat</h3>
@@ -81,27 +87,26 @@
     <script src="~/signalr/hubs"></script>
 
     <script type="text/javascript">
-        var gameId = "@ViewBag.GameId";
-        var playerId = "@ViewBag.PlayerId";
+        var _gameId = "@ViewBag.GameId";
+        var _playerId = "@ViewBag.PlayerId";
         var initialPlayers = convertToObservableList(@(Html.Raw(Json.Encode(Model.Players))));
-        var myPlayer = getByValue(initialPlayers, "Id", playerId);
+        var myPlayer = getByValue(initialPlayers, "Id", _playerId);
 
         function getByValue(arr, attr, value) {
             if (typeof arr == "object") {
-                var result = arr.filter(function (o) { return o[attr]() == value; });
+                var result = arr.filter(function(o) { return o[attr]() == value; });
                 return result ? result[0] : null;
             }
-            
-            var result = arr().filter(function(o){return o[attr]() == value;} );
-            return result? result[0] : null;
+
+            var result = arr().filter(function(o) { return o[attr]() == value; });
+            return result ? result[0] : null;
         }
 
-        function convertToObservableList(list)
-        {
+        function convertToObservableList(list) {
             var newList = [];
-            $.each(list, function (i, obj) {
+            $.each(list, function(i, obj) {
                 var newObj = {};
-                Object.keys(obj).forEach(function (key) {
+                Object.keys(obj).forEach(function(key) {
                     newObj[key] = ko.observable(obj[key]);
                 });
                 newList.push(newObj);
@@ -111,51 +116,86 @@
 
         function convertToObservable(obj) {
             var newObj = {};
-            Object.keys(obj).forEach(function (key) {
+            Object.keys(obj).forEach(function(key) {
                 newObj[key] = ko.observable(obj[key]);
             });
             return newObj;
+        }
+
+        function median(values) {
+            values.sort(function(a, b) { return a - b; });
+            var half = Math.floor(values.length / 2);
+            if (values.length % 2)
+                return values[half];
+            else
+                return findNearestFib((values[half - 1] + values[half]) / 2.0);
+        }
+
+        function findNearestFib(value) {
+            var fib = [0.5, 1, 2, 3, 5, 8, 13, 20, 40, 100];
+            var nearest = value;
+            $.each(fib, function(i, obj) {
+                if (obj >= value) {
+                    nearest = obj;
+                    return false;
+                }
+            });
+            return nearest;
         }
 
         var ViewModel = function() {
             var self = this;
             this.pokerHub = $.connection.pokerHub;
             this.players = ko.observableArray(initialPlayers);
+            this.showMedian = ko.observable(false);
 
-            this.allVoted = ko.computed(function () {
+            this.allVoted = ko.computed(function() {
                 var count = 0;
-                $.each(self.players(), function (i, obj) {
+                $.each(self.players(), function(i, obj) {
                     if (obj.CurrentVote() != null)
                         count++;
                 });
                 return count == self.players().length;
             }, this);
 
-            this.voteAverage = ko.computed(function () {
-                var count = 0;
-                var sum = 0;
-                $.each(self.players(), function (i, obj) {
+            this.voteMedian = ko.computed(function() {
+                var votes = [];
+                $.each(self.players(), function(i, obj) {
                     if (obj.CurrentVote() != null) {
-                        sum += obj.CurrentVote();
-                        count++;
+                        votes.push(obj.CurrentVote());
                     }
                 });
-                if (count == 0 || sum == 0)
+
+                if (votes.length == 0)
                     return 0;
 
-                return sum / count;
+                return median(votes);
             }, this);
 
             this.submitVote = function(points) {
-                this.pokerHub.server.playerVoted(gameId, playerId, points);
+                self.pokerHub.server.playerVoted(_gameId, _playerId, points);
             }
 
-            this.clearVotes = function () {
-                this.pokerHub.server.clearVotes(gameId);
+            this.clearVotes = function() {
+                self.pokerHub.server.clearVotes(_gameId);
+            }
+
+            this.removePlayer = function(player) {
+                self.pokerHub.server.playerLeft(_gameId, player.Id());
             }
 
             this.pokerHub.client.playerJoined = function(player) {
                 self.players.push(convertToObservable(player));
+            };
+
+            this.pokerHub.client.playerLeft = function(playerId) {
+                var p = getByValue(self.players, "Id", playerId);
+                if (p != null) {
+                    if (playerId == _playerId) {
+                        alert('What did you do?!?  You just got kicked!');
+                    }
+                    self.players.remove(p);
+                }
             };
 
             this.pokerHub.client.playerVoted = function(playerId, points) {
@@ -166,7 +206,7 @@
             };
 
             this.joinGroup = function(groupName) {
-                this.pokerHub.server.joinGroup(groupName);
+                self.pokerHub.server.joinGroup(groupName);
             }
         };
 
@@ -175,7 +215,7 @@
         $(function() {
             ko.applyBindings(vm);
             $.connection.hub.start().done(function() {
-                vm.joinGroup(gameId);
+                vm.joinGroup(_gameId);
             });
         });
     </script>

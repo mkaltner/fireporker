@@ -131,8 +131,7 @@ namespace PlanningPoker.Controllers
                 var gameName = collection["Name"];
                 var gameDescription = collection["Description"];
 
-                var isValid = !string.IsNullOrEmpty(hostName) && !string.IsNullOrEmpty(gameName) &&
-                              !string.IsNullOrEmpty(gameDescription);
+                var isValid = !string.IsNullOrEmpty(hostName) && !string.IsNullOrEmpty(gameName);
 
                 if (isValid)
                 {

@@ -42,6 +42,19 @@ namespace PlanningPoker
             }
         }
 
+        public void PlayerLeft(string gameId, string playerId)
+        {
+            var gid = Guid.Parse(gameId);
+            var pid = Guid.Parse(playerId);
+
+            var game = GameManager.GetPokerGame(gid);
+            if (game != null)
+            {
+                game.RemovePlayer(pid);
+                Clients.Group(gameId).playerLeft(playerId);
+            }
+        }
+
         public void JoinGroup(string groupName)
         {
             this.Groups.Add(this.Context.ConnectionId, groupName);
