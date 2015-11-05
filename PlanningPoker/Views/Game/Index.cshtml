@@ -1,0 +1,183 @@
+﻿@model PlanningPoker.Models.PokerGame
+
+@{
+    ViewBag.Title = "Index";
+}
+
+@section style {
+    .card_visible {
+    width: 100px;
+    height: 150px;
+    border: 1px solid #000;
+    font-size: 36pt;
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+    }
+}
+
+<div class="row">
+    <div class="col-xs-9">
+        <br />
+
+        <div class="panel panel-default">
+            <div class="panel-heading">Current Votes</div>
+            <div class="panel-body">
+                <div data-bind="foreach: players">
+                    <div data-bind="visible: CurrentVote() != null" style="display:none" class="col-xs-2">
+                        <img src="~/Content/cardback.jpg" height="150" data-bind="visible: $root.allVoted() == false && Id() != myPlayer.Id()" />
+                        <div data-bind="text: CurrentVote(), visible: $root.allVoted() == true || Id() == myPlayer.Id()" class="card_visible"></div>
+                        <br />
+                        <span data-bind="text: Name"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading">Select your estimate</div>
+            <div class="panel-body">
+                <button type="button" class="btn btn-default" data-bind="click: submitVote.bind($data,0.5)">0.5</button>
+                <button type="button" class="btn btn-default" data-bind="click: submitVote.bind($data,1)">1</button>
+                <button type="button" class="btn btn-default" data-bind="click: submitVote.bind($data,2)">2</button>
+                <button type="button" class="btn btn-default" data-bind="click: submitVote.bind($data,3)">3</button>
+                <button type="button" class="btn btn-default" data-bind="click: submitVote.bind($data,5)">5</button>
+                <button type="button" class="btn btn-default" data-bind="click: submitVote.bind($data,8)">8</button>
+                <button type="button" class="btn btn-default" data-bind="click: submitVote.bind($data,13)">13</button>
+                <button type="button" class="btn btn-default" data-bind="click: submitVote.bind($data,20)">20</button>
+                <button type="button" class="btn btn-default" data-bind="click: submitVote.bind($data,40)">40</button>
+                <button type="button" class="btn btn-default" data-bind="click: submitVote.bind($data,100)">100</button>
+                <button type="button" class="btn btn-default" data-bind="click: submitVote.bind($data,0)">?</button>
+            </div>
+        </div>
+
+        <div class="panel panel-default" data-bind="visible: myPlayer.IsHost() == true">
+            <div class="panel-heading">Host tools</div>
+            <div class="panel-body form-inline">
+                <label class="control-label" for="average">Average:</label>
+                <input id="average" type="text" data-bind="value: voteAverage" width="3" disabled="disabled" style="width: 75px;" class="form-control" />
+                <button type="button" class="btn btn-default" data-bind="click: clearVotes">Clear Votes</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-3">
+        <h3>@Model.Name</h3>
+        Participants (<span data-bind="text: players().length"></span>)
+        <div data-bind="foreach: players">
+            <i class="glyphicon glyphicon-check" data-bind="visible: CurrentVote() != null"></i>
+            <span data-bind="text: Name"></span>&nbsp;<span data-bind="visible: IsHost" style="display:none">(Host)</span><br />
+        </div>
+        <div>
+            <h3>Chat</h3>
+            Coming soon...
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    @Scripts.Render("~/bundles/knockout")
+    @Scripts.Render("~/bundles/signalr")
+
+    <script src="~/signalr/hubs"></script>
+
+    <script type="text/javascript">
+        var gameId = "@ViewBag.GameId";
+        var playerId = "@ViewBag.PlayerId";
+        var initialPlayers = convertToObservableList(@(Html.Raw(Json.Encode(Model.Players))));
+        var myPlayer = getByValue(initialPlayers, "Id", playerId);
+
+        function getByValue(arr, attr, value) {
+            if (typeof arr == "object") {
+                var result = arr.filter(function (o) { return o[attr]() == value; });
+                return result ? result[0] : null;
+            }
+            
+            var result = arr().filter(function(o){return o[attr]() == value;} );
+            return result? result[0] : null;
+        }
+
+        function convertToObservableList(list)
+        {
+            var newList = [];
+            $.each(list, function (i, obj) {
+                var newObj = {};
+                Object.keys(obj).forEach(function (key) {
+                    newObj[key] = ko.observable(obj[key]);
+                });
+                newList.push(newObj);
+            });
+            return newList;
+        }
+
+        function convertToObservable(obj) {
+            var newObj = {};
+            Object.keys(obj).forEach(function (key) {
+                newObj[key] = ko.observable(obj[key]);
+            });
+            return newObj;
+        }
+
+        var ViewModel = function() {
+            var self = this;
+            this.pokerHub = $.connection.pokerHub;
+            this.players = ko.observableArray(initialPlayers);
+
+            this.allVoted = ko.computed(function () {
+                var count = 0;
+                $.each(self.players(), function (i, obj) {
+                    if (obj.CurrentVote() != null)
+                        count++;
+                });
+                return count == self.players().length;
+            }, this);
+
+            this.voteAverage = ko.computed(function () {
+                var count = 0;
+                var sum = 0;
+                $.each(self.players(), function (i, obj) {
+                    if (obj.CurrentVote() != null) {
+                        sum += obj.CurrentVote();
+                        count++;
+                    }
+                });
+                if (count == 0 || sum == 0)
+                    return 0;
+
+                return sum / count;
+            }, this);
+
+            this.submitVote = function(points) {
+                this.pokerHub.server.playerVoted(gameId, playerId, points);
+            }
+
+            this.clearVotes = function () {
+                this.pokerHub.server.clearVotes(gameId);
+            }
+
+            this.pokerHub.client.playerJoined = function(player) {
+                self.players.push(convertToObservable(player));
+            };
+
+            this.pokerHub.client.playerVoted = function(playerId, points) {
+                var player = getByValue(self.players, "Id", playerId);
+                if (player != null) {
+                    player.CurrentVote(points);
+                }
+            };
+
+            this.joinGroup = function(groupName) {
+                this.pokerHub.server.joinGroup(groupName);
+            }
+        };
+
+        var vm = new ViewModel();
+
+        $(function() {
+            ko.applyBindings(vm);
+            $.connection.hub.start().done(function() {
+                vm.joinGroup(gameId);
+            });
+        });
+    </script>
+}
+

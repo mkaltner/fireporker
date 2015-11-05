@@ -1,0 +1,63 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+
+namespace PlanningPoker.Models
+{
+    public class PokerGame
+    {
+        public Guid Id { get; set; }
+        [Required(ErrorMessage = "Game name is required")]
+        [Display(Name = "Game name")]
+        public string Name { get; set; }
+        [Display(Name = "Game description (optional)")]
+        public string Description { get; set; }
+        public Player Host { get; set; }
+        public IList<Player> Players { get; set; }
+        // TODO: Configurable number set
+        
+        public PokerGame(string name, string hostName, string description = "", string id = "")
+        {
+            Id = Guid.NewGuid();
+            Name = name;
+            Description = description;
+            Host = new Player(Id,hostName,true);
+            Players = new List<Player> {Host};
+
+            if (!string.IsNullOrEmpty(id))
+            {
+                Id = Guid.Parse(id);
+            }
+        }
+
+        public Player AddPlayer(string name)
+        {
+            var player = new Player(Id, name);
+            Players.Add(player);
+            return player;
+        }
+
+        public Player GetPlayer(Guid playerId)
+        {
+            return Players.FirstOrDefault(x => x.Id == playerId);
+        }
+
+        public void RemovePlayer(Guid playerId)
+        {
+            var player = Players.FirstOrDefault(x => x.Id == playerId);
+            if (player != null)
+                Players.Remove(player);
+        }
+
+        public void ClearVotes(Action<Guid> resetEvent)
+        {
+            foreach (var player in Players)
+            {
+                player.CurrentVote = null;
+                resetEvent(player.Id);
+            }
+        }
+    }
+}
