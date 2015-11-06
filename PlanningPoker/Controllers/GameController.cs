@@ -49,6 +49,7 @@ namespace PlanningPoker.Controllers
 
             ViewBag.GameId = gameId;
             ViewBag.PlayerId = playerId;
+            ViewBag.Title = game.Name;
 
             // All tests passed!
             return View(game);
