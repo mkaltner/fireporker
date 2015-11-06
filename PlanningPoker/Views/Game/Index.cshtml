@@ -74,7 +74,7 @@
         var _playerId = "@ViewBag.PlayerId";
         var initialPlayers = convertToObservableList(@(Html.Raw(Json.Encode(Model.Players))));
         var myPlayer = getByValue(initialPlayers, "Id", _playerId);
-        var _fibSequence = [0, 0.5, 1, 2, 3, 5, 8, 13, 20, 40, 100];
+        var _fibSequence = [0, 0.5, 1, 2, 3, 5, 8, 13, 20, 40, 100, "?"];
 
         function getByValue(arr, attr, value) {
             if (typeof arr == "object") {
@@ -149,12 +149,12 @@
             this.voteMedian = ko.computed(function() {
                 var votes = [];
                 $.each(self.players(), function(i, obj) {
-                    if (obj.CurrentVote() != null) {
+                    if (obj.CurrentVote() != null && obj.CurrentVote() != -1) {
                         votes.push(obj.CurrentVote());
                     }
                 });
 
-                if (votes.length == 0)
+                if (votes.length === 0)
                     return 0;
 
                 return median(votes);
@@ -167,8 +167,11 @@
                 return "Show " + text;
             }
 
-            this.submitVote = function(points) {
-                self.pokerHub.server.playerVoted(_gameId, _playerId, points);
+            this.submitVote = function (points) {
+                var p = points;
+                if (points === "?")
+                    p = -1;
+                self.pokerHub.server.playerVoted(_gameId, _playerId, p);
             }
 
             this.clearVotes = function() {
@@ -211,14 +214,17 @@
             }
 
             this.addVote = function (playerId, playerName, points) {
+                var p = points;
+                if (points === -1)
+                    p = "?";
                 var vote = getByValue(self.votes, "PlayerId", playerId);
                 if (vote != null) {
-                    vote.Points(points);
+                    vote.Points(p);
                 } else {
                     var newVote = convertToObservable({
                         "PlayerId": playerId,
                         "Name": playerName,
-                        "Points": points
+                        "Points": p
                     });
                     console.log(newVote);
                     self.votes.push(newVote);
