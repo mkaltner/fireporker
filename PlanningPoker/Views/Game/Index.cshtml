@@ -189,7 +189,10 @@
             this.pokerHub.client.playerVoted = function(playerId, points) {
                 var player = getByValue(self.players, "Id", playerId);
                 if (player != null) {
-                    $("#" + playerId).fadeIn("fast");
+                    if (points != null)
+                        $("#" + playerId).fadeIn("fast");
+                    else
+                        $("#" + playerId).fadeOut("fast");
                     player.CurrentVote(points);
                 }
             };
