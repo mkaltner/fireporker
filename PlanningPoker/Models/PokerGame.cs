@@ -16,6 +16,7 @@ namespace PlanningPoker.Models
         public string Description { get; set; }
         public Player Host { get; set; }
         public IList<Player> Players { get; set; }
+        public DateTime ExpirationDate { get; set; }
         // TODO: Configurable number set
         
         public PokerGame(string name, string hostName, string description = "", string id = "")
@@ -25,6 +26,7 @@ namespace PlanningPoker.Models
             Description = description;
             Host = new Player(Id,hostName,true);
             Players = new List<Player> {Host};
+            ExpirationDate = DateTime.UtcNow.AddDays(1);
 
             if (!string.IsNullOrEmpty(id))
             {

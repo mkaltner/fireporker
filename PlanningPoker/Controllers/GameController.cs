@@ -95,6 +95,7 @@ namespace PlanningPoker.Controllers
                             ["GameId"] = gameId.ToString(),
                             ["PlayerId"] = player.Id.ToString()
                         };
+                        cookie.Expires = game.ExpirationDate;
                         Response.Cookies.Add(cookie);
                     }
                     
@@ -144,6 +145,7 @@ namespace PlanningPoker.Controllers
                         ["GameId"] = game.Id.ToString(),
                         ["PlayerId"] = game.Host.Id.ToString()
                     };
+                    cookie.Expires = game.ExpirationDate;
                     Response.Cookies.Add(cookie);
 
                     return RedirectToAction("Index", new {id = game.Id});

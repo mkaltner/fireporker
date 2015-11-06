@@ -4,7 +4,13 @@
 <br/>
 
 <p align="center">
-    <img src="~/Content/Cover.jpg" style="width: 450px;"/>
-    <br/><br/>
+    <img src="~/Content/Cover.jpg" style="width: 400px;"/>
+</p>
+
+<p align="center">
     <a href="@Url.Action("Create", "Game")" class="btn btn-default">Play Now</a>
+</p>
+
+<p align="center">
+    There are <b>@ViewBag.GameCount</b> game(s) online.
 </p>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using PlanningPoker.Models;
 
 namespace PlanningPoker.Controllers
 {
@@ -10,6 +11,7 @@ namespace PlanningPoker.Controllers
     {
         public ActionResult Index()
         {
+            ViewBag.GameCount = GameManager.GameCount.ToString("F0");
             return View();
         }
 

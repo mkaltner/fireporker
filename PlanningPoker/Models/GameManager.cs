@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Caching;
 
 namespace PlanningPoker.Models
@@ -7,13 +8,18 @@ namespace PlanningPoker.Models
     {
         private const string CachePrefix = "PokerGame";
         private static readonly object cacheLock = new object();
+        private static List<string> _cacheKeys = new List<string>();
+
+        public static int GameCount { get { return _cacheKeys.Count; } }
 
         public static void StorePokerGame(PokerGame game)
         {
             var cacheKey = string.Format("{0}_{1}", CachePrefix, game.Id);
-            StoreCacheObject(cacheKey, game);
+            StoreCacheObject(cacheKey, game, game.ExpirationDate);
+            if (!_cacheKeys.Contains(cacheKey))
+                _cacheKeys.Add(cacheKey);
         }
-
+        
         public static PokerGame GetPokerGame(Guid gameId)
         {
             var cacheKey = string.Format("{0}_{1}", CachePrefix, gameId);
@@ -21,11 +27,11 @@ namespace PlanningPoker.Models
             return game;
         }
 
-        private static void StoreCacheObject(string cacheKey, object cacheObject)
+        private static void StoreCacheObject(string cacheKey, object cacheObject, DateTime expirationDate)
         {
             lock (cacheLock)
             {
-                MemoryCache.Default.Set(cacheKey, cacheObject, DateTime.Today.AddDays(1));
+                MemoryCache.Default.Set(cacheKey, cacheObject, expirationDate);
             }
         }
 
