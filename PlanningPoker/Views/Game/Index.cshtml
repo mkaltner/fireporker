@@ -124,7 +124,7 @@
 
         function SortByPoints(a, b) {
             var aPoints = a.Points();
-            var bPoints = b.Points();
+            var bPoints = b.Points() === "?" ? -1 : b.Points();
             return ((aPoints < bPoints) ? -1 : ((aPoints > bPoints) ? 1 : 0));
         }
 
@@ -226,7 +226,7 @@
                         "Name": playerName,
                         "Points": p
                     });
-                    console.log(newVote);
+                    
                     self.votes.push(newVote);
                     $("#" + playerId).fadeIn("fast");
                 }
@@ -246,6 +246,7 @@
                         self.addVote(obj.Id(), obj.Name(), obj.CurrentVote());
                     }
                 });
+
                 self.votes.sort(SortByPoints);
             }
         };
