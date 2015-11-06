@@ -11,12 +11,12 @@
         <div class="panel panel-default">
             <div class="panel-heading">Current Votes</div>
             <div class="panel-body">
-                <div data-bind="foreach: players" class="clearfix">
-                    <div data-bind="visible: CurrentVote() != null, attr: {'id': Id()}" style="display: none; padding-right: 15px; text-align: center;" class="pull-left">
-                        <div data-bind="visible: $root.allVoted() == false && (Id() != myPlayer.Id() || !$root.showMyVote())">
+                <div data-bind="foreach: votes" class="clearfix">
+                    <div data-bind="attr: {'id': PlayerId()}" style="display: none; padding-right: 15px; text-align: center;" class="pull-left">
+                        <div data-bind="visible: $root.allVoted() == false && (PlayerId() != myPlayer.Id() || !$root.showMyVote())">
                             <img src="~/Content/CardBack.png" height="150" />
                         </div>
-                        <div data-bind="text: CurrentVote(), visible: $root.allVoted() == true || (Id() == myPlayer.Id() && $root.showMyVote())" class="card_visible"></div>
+                        <div data-bind="text: Points(), visible: $root.allVoted() == true || (PlayerId() == myPlayer.Id() && $root.showMyVote())" class="card_visible"></div>
                         <span data-bind="text: Name"></span>
                     </div>
                 </div>
@@ -75,7 +75,7 @@
         var initialPlayers = convertToObservableList(@(Html.Raw(Json.Encode(Model.Players))));
         var myPlayer = getByValue(initialPlayers, "Id", _playerId);
         var _fibSequence = [0, 0.5, 1, 2, 3, 5, 8, 13, 20, 40, 100];
-        
+
         function getByValue(arr, attr, value) {
             if (typeof arr == "object") {
                 var result = arr.filter(function(o) { return o[attr]() == value; });
@@ -113,13 +113,19 @@
 
         function findNearestFib(value) {
             var nearest = value;
-            $.each(_fibSequence, function (i, obj) {
+            $.each(_fibSequence, function(i, obj) {
                 if (obj >= value) {
                     nearest = obj;
                     return false;
                 }
             });
             return nearest;
+        }
+
+        function SortByPoints(a, b) {
+            var aPoints = a.Points();
+            var bPoints = b.Points();
+            return ((aPoints < bPoints) ? -1 : ((aPoints > bPoints) ? 1 : 0));
         }
 
         var ViewModel = function() {
@@ -129,6 +135,7 @@
             this.showMedian = ko.observable(true);
             this.showMyVote = ko.observable(true);
             this.fibSequence = ko.observableArray(_fibSequence);
+            this.votes = ko.observableArray([]);
 
             this.allVoted = ko.computed(function() {
                 var count = 0;
@@ -188,17 +195,51 @@
 
             this.pokerHub.client.playerVoted = function(playerId, points) {
                 var player = getByValue(self.players, "Id", playerId);
-                if (player != null) {
-                    if (points != null)
-                        $("#" + playerId).fadeIn("fast");
-                    else
-                        $("#" + playerId).fadeOut("fast");
-                    player.CurrentVote(points);
+                player.CurrentVote(points);
+                if (points == null) {
+                    self.removeVote(playerId);
+                } else {
+                    self.addVote(playerId, player.Name(), points);
+                    if (self.allVoted()) {
+                        self.votes.sort(SortByPoints);
+                    }
                 }
             };
 
             this.joinGroup = function(groupName) {
                 self.pokerHub.server.joinGroup(groupName);
+            }
+
+            this.addVote = function (playerId, playerName, points) {
+                var vote = getByValue(self.votes, "PlayerId", playerId);
+                if (vote != null) {
+                    vote.Points(points);
+                } else {
+                    var newVote = convertToObservable({
+                        "PlayerId": playerId,
+                        "Name": playerName,
+                        "Points": points
+                    });
+                    console.log(newVote);
+                    self.votes.push(newVote);
+                    $("#" + playerId).fadeIn("fast");
+                }
+            }
+
+            this.removeVote = function (playerId) {
+                var vote = getByValue(self.votes, "PlayerId", playerId);
+                if (vote != null) {
+                    $("#" + playerId).fadeOut("fast");
+                    self.votes.remove(vote);
+                }
+            }
+
+            this.initializeVotes = function() {
+                $.each(self.players(), function (i, obj) {
+                    if (obj.CurrentVote() != null) {
+                        self.addVote(obj.Id(), obj.Name(), obj.CurrentVote());
+                    }
+                });
             }
         };
 
@@ -208,6 +249,7 @@
             ko.applyBindings(vm);
             $.connection.hub.start().done(function() {
                 vm.joinGroup(_gameId);
+                vm.initializeVotes();
             });
         });
     </script>
