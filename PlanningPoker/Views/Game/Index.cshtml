@@ -14,10 +14,11 @@
                     <div data-bind="foreach: votes" class="clearfix">
                         <div data-bind="attr: {'id': PlayerId()}" style="display: none; padding-right: 15px; text-align: center;" class="pull-left">
                             <div data-bind="visible: $root.allVoted() == false && (PlayerId() != myPlayer.Id() || !$root.showMyVote())">
-                                <img src="~/Content/CardBack.png" height="150" />
+                                <img src="~/Content/CardBack.png" class="card_back" />
                             </div>
                             <div data-bind="text: Points(), visible: $root.allVoted() == true || (PlayerId() == myPlayer.Id() && $root.showMyVote())" class="card_visible"></div>
-                            <span data-bind="text: Name"></span>
+                            <span data-bind="text: Name, visible: PlayerId() != myPlayer.Id()"></span>
+                            <em data-bind="visible: PlayerId() == myPlayer.Id()">Me</em>
                         </div>
                     </div>
                 </div>
