@@ -323,6 +323,10 @@
                         alert('What did you do?!?  You just got kicked!');
                     }
                     self.players.remove(p);
+                    var vote = getByValue(self.votes(), "PlayerId", playerId);
+                    if (vote != null) {
+                        self.votes.remove(vote);
+                    }
                 }
             };
 
