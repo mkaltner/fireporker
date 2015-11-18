@@ -140,7 +140,7 @@
         var now = moment.utc();
         var vbNow = moment("@ViewBag.Now", "MM/DD/YYYY hh:mm:ss a").utc();
         var offset = moment.utc(now.diff(vbNow)).unix();
-        var dateOffset = offset - -28800;
+        var dateOffset = (offset < -28800) ? -28800 - offset : offset - -28800;
 
         function getByValue(arr, attr, value) {
             if (typeof arr == "object") {
