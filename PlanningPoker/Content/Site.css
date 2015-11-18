@@ -28,6 +28,13 @@ textarea {
     margin: 5px;
 }
 
+.label-as-badge {
+    border-radius: 1em;
+    font-size: 100%;
+    padding: .2em .5em .2em;
+    min-width: 40px;
+}
+
 .card_visible {
     width: 106px;
     height: 150px;

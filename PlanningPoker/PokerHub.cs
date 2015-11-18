@@ -67,8 +67,10 @@ namespace PlanningPoker
             var game = GameManager.GetPokerGame(gid);
             if (game != null)
             {
+                game.RoundStarted = DateTime.UtcNow;
+
                 var story = game.AddStory(title, description);
-                Clients.Group(gameId).storyAdded(story);
+                Clients.Group(gameId).storyAdded(story, game.RoundStarted);
             }
         }
 

@@ -18,6 +18,8 @@ namespace PlanningPoker.Models
         public IList<Player> Players { get; set; }
         public DateTime ExpirationDate { get; set; }
         public IList<Story> Stories { get; set; }
+        public DateTime RoundStarted { get; set; }
+
         // TODO: Configurable number set?
         
         public PokerGame(string name, string hostName, string description = "", string id = "")

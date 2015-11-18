@@ -2,14 +2,23 @@
 <form>
     <div class="row">
         <div class="col-sm-8">
-            <br />
+            <br/>
+
+            <div class="well well-sm" data-bind="visible: currentStory() != null" style="display: none;">
+                <em>Current story:</em><br/>
+                <strong data-bind="text: currentStoryTitle"></strong>
+                <em data-bind="text: currentStoryDescription"></em>
+            </div>
 
             <div class="alert alert-warning" data-bind="visible: myPlayer.IsHost() != true && currentStory() == null" style="display: none;">
                 <h3>Waiting for host to create a story...</h3>
             </div>
 
-            <div class="panel panel-default" data-bind="visible: currentStory() != null" style="display: none;">
-                <div class="panel-heading">Current Votes</div>
+            <div class="panel panel-warning" data-bind="visible: currentStory() != null" style="display: none;">
+                <div class="panel-heading clearfix">
+                    Current Votes
+                    <div class="label label-primary label-as-badge pull-right" data-bind="text: timer"></div>
+                </div>
                 <div class="panel-body">
                     <div data-bind="foreach: votes" class="clearfix">
                         <div data-bind="attr: {'id': PlayerId()}" style="display: none; padding-right: 15px; text-align: center;" class="pull-left">
@@ -24,24 +33,24 @@
                 </div>
             </div>
 
-            <div class="panel panel-default" data-bind="visible: allVoted() == false && currentStory() != null" style="display: none;">
+            <div class="panel panel-info" data-bind="visible: allVoted() == false && currentStory() != null" style="display: none;">
                 <div class="panel-heading">Select your estimate</div>
                 <div class="panel-body" data-bind="foreach: fibSequence">
                     <button type="button" class="btn btn-default" data-bind="click: $root.submitVote.bind($data), text: $data"></button>
                 </div>
             </div>
 
-            <div class="panel panel-default" data-bind="visible: myPlayer.IsHost() == true && currentStory() != null" style="display: none;">
+            <div class="panel panel-success" data-bind="visible: myPlayer.IsHost() == true && currentStory() != null" style="display: none;">
                 <div class="panel-heading">Host tools</div>
                 <div class="panel-body form-inline">
 
-                    <input type="checkbox" id="showMyVote" data-bind="checked: showMyVote" />
+                    <input type="checkbox" id="showMyVote" data-bind="checked: showMyVote"/>
                     <label class="control-label" for="showMyVote" data-bind="text: showHideLabel(showMyVote,'my vote')"></label>
 
                     <div class="form-group">
-                        <input type="checkbox" id="showMedian" data-bind="checked: showMedian" />
+                        <input type="checkbox" id="showMedian" data-bind="checked: showMedian"/>
                         <label for="showMedian" data-bind="text: showHideLabel(showMedian,'median')" class="control-label"></label>
-                        <input id="median" type="text" data-bind="value: voteMedian, visible: showMedian" width="3" disabled="disabled" style="width: 55px;" class="form-control" />
+                        <input id="median" type="text" data-bind="value: voteMedian, visible: showMedian" width="3" disabled="disabled" style="width: 55px;" class="form-control"/>
                     </div>
 
                     <button type="button" class="btn btn-danger" data-bind="click: clearVotes">Clear votes</button>
@@ -54,7 +63,7 @@
                 </div>
             </div>
 
-            <div class="panel panel-default" data-bind="visible: myPlayer.IsHost() == true && currentStory() == null" style="display: none;">
+            <div class="panel panel-success" data-bind="visible: myPlayer.IsHost() == true && currentStory() == null" style="display: none;">
                 <div class="panel-heading">Story</div>
                 <div class="panel-body">
                     <label for="storyTitle" class="control-label">Title</label>
@@ -71,10 +80,13 @@
             <div class="panel panel-default" data-bind="visible: stories().length" style="display: none;">
                 <div class="panel-heading">Stories</div>
                 <div class="panel-body">
-                    <ul class="list-group" data-bind="foreach: stories">
+                    <ul class="list-group clearfix" data-bind="foreach: stories">
                         <li class="list-group-item">
-                            <span class="badge" data-bind="visible: Estimate() > 0, text: Estimate"></span>
-                            <span class="badge" data-bind="visible: Estimate() == null">CURRENT</span>
+                            <span class="label label-success label-as-badge pull-right" data-bind="visible: Estimate() > 0 && Estimate() < 3, text: Estimate"></span>
+                            <span class="label label-primary label-as-badge pull-right" data-bind="visible: Estimate() >= 3 && Estimate() < 8, text: Estimate"></span>
+                            <span class="label label-warning label-as-badge pull-right" data-bind="visible: Estimate() >= 8 && Estimate() < 20, text: Estimate"></span>
+                            <span class="label label-danger label-as-badge pull-right" data-bind="visible: Estimate() >= 20 && Estimate() <= 100, text: Estimate"></span>
+                            <span class="label label-default label-as-badge pull-right" data-bind="visible: Estimate() == null">CURRENT</span>
                             <span data-bind="text: $index()+1"></span>.&nbsp;<span data-bind="text: Title"></span>
                             <span data-bind="visible: Description().length">
                                 <br />
@@ -112,6 +124,7 @@
 @section scripts {
     @Scripts.Render("~/bundles/knockout")
     @Scripts.Render("~/bundles/signalr")
+    @Scripts.Render("~/bundles/moment")
 
     <script src="~/signalr/hubs"></script>
 
@@ -120,6 +133,7 @@
         var _playerId = "@ViewBag.PlayerId";
         var initialPlayers = convertToObservableList(@(Html.Raw(Json.Encode(Model.Players))));
         var initialStories = convertToObservableList(@(Html.Raw(Json.Encode(Model.Stories))));
+        var _roundStarted = @(Html.Raw(Json.Encode(Model.RoundStarted)));
         var myPlayer = getByValue(initialPlayers, "Id", _playerId);
         var _fibSequence = [0, 0.5, 1, 2, 3, 5, 8, 13, 20, 40, 100, "?"];
 
@@ -175,6 +189,10 @@
             return ((aPoints < bPoints) ? -1 : ((aPoints > bPoints) ? 1 : 0));
         }
 
+        function getRoundTime() {
+            return moment.utc(moment.utc().diff(moment(_roundStarted))).format("mm:ss");
+        }
+
         var ViewModel = function() {
             var self = this;
             this.pokerHub = $.connection.pokerHub;
@@ -187,12 +205,17 @@
             this.storyTitle = ko.observable("");
             this.storyDescription = ko.observable("");
             this.estimate = ko.observable(0);
+            this.timer = ko.observable(getRoundTime());
+
+            setInterval(function () {
+                if (self.currentStory() != null) {
+                    self.timer(getRoundTime());
+                }
+            }, 1000);
 
             this.addStory = function () {
                 if (self.storyTitle().length) {
                     self.pokerHub.server.addStory(_gameId, self.storyTitle(), self.storyDescription());
-                    self.storyTitle("");
-                    self.storyDescription("");
                 } else {
                     alert("Invalid title");
                 }
@@ -205,6 +228,24 @@
                         currentStory = obj;
                 });
                 return currentStory;
+            }, this);
+
+            this.currentStoryTitle = ko.computed(function () {
+                var title = "";
+                $.each(self.stories(), function (i, obj) {
+                    if (obj.Estimate() == null)
+                        title = obj.Title();
+                });
+                return title;
+            }, this);
+
+            this.currentStoryDescription = ko.computed(function () {
+                var desc = "";
+                $.each(self.stories(), function (i, obj) {
+                    if (obj.Estimate() == null)
+                        desc = obj.Description();
+                });
+                return desc;
             }, this);
 
             this.voteMedian = ko.computed(function() {
@@ -256,6 +297,8 @@
 
             this.acceptEstimate = function () {
                 self.pokerHub.server.acceptEstimate(_gameId, self.currentStory().Id(), self.estimate());
+                self.storyTitle("");
+                self.storyDescription("");
             }
 
             this.removePlayer = function(player) {
@@ -283,8 +326,9 @@
                 }
             };
 
-            this.pokerHub.client.storyAdded = function (story) {
+            this.pokerHub.client.storyAdded = function (story, roundStarted) {
                 self.stories.push(convertToObservable(story));
+                _roundStarted = roundStarted;
             };
 
             this.pokerHub.client.playerVoted = function(playerId, points) {
