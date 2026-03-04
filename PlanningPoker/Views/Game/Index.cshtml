@@ -10,7 +10,7 @@
                 <em data-bind="text: currentStoryDescription"></em>
             </div>
 
-            <div class="alert alert-warning" data-bind="visible: myPlayer.IsHost() != true && currentStory() == null" style="display: none;">
+            <div class="alert alert-warning" data-bind="visible: myPlayer.isHost() != true && currentStory() == null" style="display: none;">
                 <h3>Waiting for host to create a story...</h3>
             </div>
 
@@ -21,13 +21,13 @@
                 </div>
                 <div class="panel-body">
                     <div data-bind="foreach: votes" class="clearfix">
-                        <div data-bind="attr: {'id': PlayerId()}" style="display: none; padding-right: 15px; text-align: center;" class="pull-left">
-                            <div data-bind="visible: $root.allVoted() == false && (PlayerId() != myPlayer.Id() || !$root.showMyVote())">
+                        <div data-bind="attr: {'id': playerId()}" style="display: none; padding-right: 15px; text-align: center;" class="pull-left">
+                            <div data-bind="visible: $root.allVoted() == false && (playerId() != myPlayer.id() || !$root.showMyVote())">
                                 <img src="/Content/CardBack.png" class="card_back" />
                             </div>
-                            <div data-bind="text: Points(), visible: $root.allVoted() == true || (PlayerId() == myPlayer.Id() && $root.showMyVote())" class="card_visible"></div>
-                            <span data-bind="text: Name, visible: PlayerId() != myPlayer.Id()"></span>
-                            <em data-bind="visible: PlayerId() == myPlayer.Id()">Me</em>
+                            <div data-bind="text: points(), visible: $root.allVoted() == true || (playerId() == myPlayer.id() && $root.showMyVote())" class="card_visible"></div>
+                            <span data-bind="text: name, visible: playerId() != myPlayer.id()"></span>
+                            <em data-bind="visible: playerId() == myPlayer.id()">Me</em>
                         </div>
                     </div>
                 </div>
@@ -40,7 +40,7 @@
                 </div>
             </div>
 
-            <div class="panel panel-success" data-bind="visible: myPlayer.IsHost() == true && currentStory() != null" style="display: none;">
+            <div class="panel panel-success" data-bind="visible: myPlayer.isHost() == true && currentStory() != null" style="display: none;">
                 <div class="panel-heading">Host tools</div>
                 <div class="panel-body form-inline">
 
@@ -63,7 +63,7 @@
                 </div>
             </div>
 
-            <div class="panel panel-success" data-bind="visible: myPlayer.IsHost() == true && currentStory() == null" style="display: none;">
+            <div class="panel panel-success" data-bind="visible: myPlayer.isHost() == true && currentStory() == null" style="display: none;">
                 <div class="panel-heading">Story</div>
                 <div class="panel-body">
                     <label for="storyTitle" class="control-label">Title</label>
@@ -82,15 +82,15 @@
                 <div class="panel-body">
                     <ul class="list-group clearfix" data-bind="foreach: stories">
                         <li class="list-group-item">
-                            <span class="label label-success label-as-badge pull-right" data-bind="visible: Estimate() > 0 && Estimate() < 3, text: Estimate"></span>
-                            <span class="label label-primary label-as-badge pull-right" data-bind="visible: Estimate() >= 3 && Estimate() < 8, text: Estimate"></span>
-                            <span class="label label-warning label-as-badge pull-right" data-bind="visible: Estimate() >= 8 && Estimate() < 20, text: Estimate"></span>
-                            <span class="label label-danger label-as-badge pull-right" data-bind="visible: Estimate() >= 20 && Estimate() <= 100, text: Estimate"></span>
-                            <span class="label label-default label-as-badge pull-right" data-bind="visible: Estimate() == null">CURRENT</span>
-                            <span data-bind="text: $index()+1"></span>.&nbsp;<span data-bind="text: Title"></span>
-                            <span data-bind="visible: Description().length">
+                            <span class="label label-success label-as-badge pull-right" data-bind="visible: estimate() > 0 && estimate() < 3, text: estimate"></span>
+                            <span class="label label-primary label-as-badge pull-right" data-bind="visible: estimate() >= 3 && estimate() < 8, text: estimate"></span>
+                            <span class="label label-warning label-as-badge pull-right" data-bind="visible: estimate() >= 8 && estimate() < 20, text: estimate"></span>
+                            <span class="label label-danger label-as-badge pull-right" data-bind="visible: estimate() >= 20 && estimate() <= 100, text: estimate"></span>
+                            <span class="label label-default label-as-badge pull-right" data-bind="visible: estimate() == null">CURRENT</span>
+                            <span data-bind="text: $index()+1"></span>.&nbsp;<span data-bind="text: title"></span>
+                            <span data-bind="visible: description().length">
                                 <br />
-                                <em data-bind="text: Description" style="font-style: italic"></em>
+                                <em data-bind="text: description" style="font-style: italic"></em>
                             </span>
                         </li>
                     </ul>
@@ -104,11 +104,11 @@
                 Participants (<span data-bind="text: players().length"></span>)
                 <div data-bind="foreach: players">
                     <div class="clearfix" style="white-space: nowrap">
-                        <i style="padding-right: 3px; color: green" class="pull-left glyphicon glyphicon-ok" data-bind="visible: CurrentVote() != null"></i>
+                        <i style="padding-right: 3px; color: green" class="pull-left glyphicon glyphicon-ok" data-bind="visible: currentVote() != null"></i>
                         <div class="pull-left" style="padding-right: 3px;">
-                            <span data-bind="text: Name"></span>&nbsp;<span data-bind="visible: IsHost">(Host)</span><br />
+                            <span data-bind="text: name"></span>&nbsp;<span data-bind="visible: isHost">(Host)</span><br />
                         </div>
-                        <a href="#" data-bind="click: $root.removePlayer, visible: myPlayer.IsHost() && !IsHost()" style="color: red;"><i class="glyphicon glyphicon-remove"></i></a>
+                        <a href="#" data-bind="click: $root.removePlayer, visible: myPlayer.isHost() && !isHost()" style="color: red;"><i class="glyphicon glyphicon-remove"></i></a>
                     </div>
                 </div>
                 <div>
@@ -190,8 +190,8 @@
     }
 
     function SortByPoints(a, b) {
-        var aPoints = a.Points();
-        var bPoints = b.Points() === "?" ? -1 : b.Points();
+        var aPoints = a.points();
+        var bPoints = b.points() === "?" ? -1 : b.points();
         return ((aPoints < bPoints) ? -1 : ((aPoints > bPoints) ? 1 : 0));
     }
 
@@ -221,7 +221,7 @@
 
         this.addStory = function () {
             if (self.storyTitle().length) {
-                self.connection.invoke("AddStory", _gameId, self.storyTitle(), self.storyDescription())
+                self.connection.invoke("AddStory", _gameId, self.storyTitle(), self.storydescription())
                     .catch(function(err) { console.error(err.toString()); });
             } else {
                 alert("Invalid title");
