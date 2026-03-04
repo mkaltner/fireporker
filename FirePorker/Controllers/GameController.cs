@@ -146,7 +146,6 @@ public class GameController : Controller
             {
                 id = g.Id.ToString(),
                 name = g.Name,
-                description = g.Description,
                 playerCount = g.Players.Count,
                 status = g.Status,
                 progress = g.Progress,

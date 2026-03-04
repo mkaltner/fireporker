@@ -47,13 +47,7 @@
             @foreach (var game in Model.OrderByDescending(g => g.Status == "Voting").ThenByDescending(g => g.Players.Count))
             {
                 <tr data-game-id="@game.Id" data-status="@game.Status" data-progress="@game.Progress" data-players="@game.Players.Count">
-                    <td>
-                        <strong>@game.Name</strong>
-                        @if (!string.IsNullOrEmpty(game.Description))
-                        {
-                            <br /><small class="text-muted">@game.Description</small>
-                        }
-                    </td>
+                    <td><strong>@game.Name</strong></td>
                     <td>@game.Players.Count</td>
                     <td>
                         @if (game.Status == "Voting")
