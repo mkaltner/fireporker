@@ -102,7 +102,7 @@
     }
 
     function refreshList() {
-        $.getJSON('@Url.Action("ListData", "Game")', function(games) {
+        $.getJSON('@Url.Action("ActivityData", "Game")', function(games) {
             if (games.length === 0) {
                 // Show empty state
                 $('#game-list-container').html(

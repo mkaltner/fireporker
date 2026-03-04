@@ -129,15 +129,15 @@ public class GameController : Controller
 #endif
     }
 
-    public IActionResult List()
+    public IActionResult Activity()
     {
         var games = GameManager.GetPokerGames();
         return View(games);
     }
 
-    // GET: Game/ListData (JSON for AJAX refresh)
+    // GET: Game/ActivityData (JSON for AJAX refresh)
     [HttpGet]
-    public IActionResult ListData()
+    public IActionResult ActivityData()
     {
         var games = GameManager.GetPokerGames()
             .OrderByDescending(g => g.Status == "Voting")
