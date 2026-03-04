@@ -200,8 +200,8 @@
         var self = this;
         this.connection = null;
         this.players = ko.observableArray(initialPlayers);
-        this.showMedian = ko.observable(true);
-        this.showMyVote = ko.observable(true);
+        this.showMedian = ko.observable(false);
+        this.showMyVote = ko.observable(false);
         this.fibSequence = ko.observableArray(_fibSequence);
         this.votes = ko.observableArray([]);
         this.stories = ko.observableArray(initialStories);
