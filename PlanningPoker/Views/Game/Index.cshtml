@@ -129,9 +129,12 @@
     <script type="text/javascript">
     var _gameId = "@ViewBag.GameId";
     var _playerId = "@ViewBag.PlayerId";
-    var initialPlayers = convertToObservableList(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Players)));
-    var initialStories = convertToObservableList(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Stories)));
-    var _roundStarted = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RoundStarted));
+@{
+        var jsonOptions = new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
+    }
+    var initialPlayers = convertToObservableList(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Players, jsonOptions)));
+    var initialStories = convertToObservableList(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Stories, jsonOptions)));
+    var _roundStarted = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RoundStarted, jsonOptions));
     var myPlayer = getByValue(initialPlayers, "id", _playerId);
     var _fibSequence = [0, 0.5, 1, 2, 3, 5, 8, 13, 20, 40, 100, "?"];
 

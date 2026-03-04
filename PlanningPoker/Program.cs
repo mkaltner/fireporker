@@ -1,9 +1,20 @@
+using System.Text.Json;
+
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure JSON to use camelCase (matching JavaScript conventions)
+var jsonOptions = new JsonSerializerOptions
+{
+    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+};
+
 // Add services to the container.
-builder.Services.AddControllersWithViews();
-builder.Services.AddSignalR();
+builder.Services.AddControllersWithViews()
+    .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
+builder.Services.AddSignalR()
+    .AddJsonProtocol(options => options.PayloadSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
 builder.Services.AddMemoryCache();
+builder.Services.AddSingleton(jsonOptions);
 
 var app = builder.Build();
 
