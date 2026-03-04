@@ -1,27 +1,75 @@
-﻿@model IEnumerable<FirePorker.Models.PokerGame>
+@model IEnumerable<FirePorker.Models.PokerGame>
 
 @{
-    ViewBag.Title = "Game List";
+    ViewBag.Title = "Activity";
 }
 
-<h2>Games</h2>
+<h2>Activity</h2>
+<p class="text-muted">Active planning poker sessions</p>
 
-<table class="table table-striped table-hover">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Players</th>
-            <th>Expires</th>
-        </tr>
-    </thead>
-    <tbody>
-    @foreach (var game in Model)
-    {
-        <tr>
-            <td>@game.Name</td>
-            <td>@game.Players.Count</td>
-            <td>@game.ExpirationDate.ToString("R")</td>
-        </tr>
-    }
-    </tbody>
-</table>
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        <strong>No active games right now.</strong>
+        <br />
+        <a href="@Url.Action("Create", "Game")">Create a new game</a> to get started.
+    </div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Game</th>
+                <th>Players</th>
+                <th>Status</th>
+                <th>Progress</th>
+                <th>Expires</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var game in Model.OrderByDescending(g => g.Status == "Voting").ThenByDescending(g => g.Players.Count))
+        {
+            <tr>
+                <td>
+                    <strong>@game.Name</strong>
+                    @if (!string.IsNullOrEmpty(game.Description))
+                    {
+                        <br /><small class="text-muted">@game.Description</small>
+                    }
+                </td>
+                <td>@game.Players.Count</td>
+                <td>
+                    @if (game.Status == "Voting")
+                    {
+                        <span class="label label-success">Voting</span>
+                    }
+                    else if (game.Status == "Waiting")
+                    {
+                        <span class="label label-warning">Waiting</span>
+                    }
+                    else
+                    {
+                        <span class="label label-default">Idle</span>
+                    }
+                </td>
+                <td>
+                    @if (game.Status != "Idle")
+                    {
+                        <span>@game.Progress voted</span>
+                    }
+                    else
+                    {
+                        <span class="text-muted">—</span>
+                    }
+                </td>
+                <td><span class="text-muted">@game.ExpiresIn</span></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    
+    <p class="text-muted">
+        <small>@Model.Count() active game@(Model.Count() != 1 ? "s" : "")</small>
+    </p>
+}
