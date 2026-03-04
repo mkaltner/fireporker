@@ -1,6 +1,7 @@
 services:
   fireporker:
-    build: .
+    image: ghcr.io/mkaltner/fireporker:latest
+    # build: .  # Uncomment to build locally instead
     ports:
       - "8080:8080"
     environment:
