@@ -144,7 +144,6 @@ public class GameController : Controller
             .ThenByDescending(g => g.Players.Count)
             .Select(g => new
             {
-                id = g.Id.ToString(),
                 name = g.Name,
                 playerCount = g.Players.Count,
                 status = g.Status,

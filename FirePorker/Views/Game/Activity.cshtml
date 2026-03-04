@@ -46,7 +46,7 @@
             <tbody id="game-tbody">
             @foreach (var game in Model.OrderByDescending(g => g.Status == "Voting").ThenByDescending(g => g.Players.Count))
             {
-                <tr data-game-id="@game.Id" data-status="@game.Status" data-progress="@game.Progress" data-players="@game.Players.Count">
+                <tr data-game-name="@game.Name" data-status="@game.Status" data-progress="@game.Progress" data-players="@game.Players.Count">
                     <td><strong>@game.Name</strong></td>
                     <td>@game.Players.Count</td>
                     <td>
@@ -92,8 +92,8 @@
 
     function initializeData() {
         $('#game-tbody tr').each(function() {
-            var id = $(this).data('game-id');
-            previousData[id] = {
+            var name = $(this).data('game-name');
+            previousData[name] = {
                 status: $(this).data('status'),
                 progress: $(this).data('progress'),
                 players: $(this).data('players')
@@ -121,10 +121,10 @@
                 return;
             }
 
-            var newIds = {};
+            var newNames = {};
             games.forEach(function(game) {
-                newIds[game.id] = true;
-                var row = $('tr[data-game-id="' + game.id + '"]');
+                newNames[game.name] = true;
+                var row = $('tr[data-game-name="' + game.name.replace(/"/g, '\\"') + '"]');
                 
                 if (row.length === 0) {
                     // New game - will pulse after reload
@@ -133,7 +133,7 @@
                 }
 
                 // Check for changes
-                var prev = previousData[game.id] || {};
+                var prev = previousData[game.name] || {};
                 var changed = prev.status !== game.status || 
                               prev.progress !== game.progress || 
                               prev.players !== game.playerCount;
@@ -146,7 +146,7 @@
                 }
 
                 // Update tracking
-                previousData[game.id] = {
+                previousData[game.name] = {
                     status: game.status,
                     progress: game.progress,
                     players: game.playerCount
@@ -154,12 +154,12 @@
             });
 
             // Check for removed games
-            for (var id in previousData) {
-                if (!newIds[id]) {
-                    $('tr[data-game-id="' + id + '"]').fadeOut(300, function() {
+            for (var name in previousData) {
+                if (!newNames[name]) {
+                    $('tr[data-game-name="' + name.replace(/"/g, '\\"') + '"]').fadeOut(300, function() {
                         $(this).remove();
                     });
-                    delete previousData[id];
+                    delete previousData[name];
                 }
             }
 
