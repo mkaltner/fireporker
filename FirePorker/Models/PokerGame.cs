@@ -60,6 +60,9 @@ public class PokerGame
             return $"in {(int)remaining.TotalDays}d";
         }
     }
+    
+    // Stable tracking key for activity view (not reversible to real ID)
+    public string TrackingKey => Id.GetHashCode().ToString("x8");
 
     // TODO: Configurable number set?
     
