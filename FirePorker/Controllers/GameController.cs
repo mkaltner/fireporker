@@ -135,6 +135,26 @@ public class GameController : Controller
         return View(games);
     }
 
+    // GET: Game/ListData (JSON for AJAX refresh)
+    [HttpGet]
+    public IActionResult ListData()
+    {
+        var games = GameManager.GetPokerGames()
+            .OrderByDescending(g => g.Status == "Voting")
+            .ThenByDescending(g => g.Players.Count)
+            .Select(g => new
+            {
+                id = g.Id.ToString(),
+                name = g.Name,
+                description = g.Description,
+                playerCount = g.Players.Count,
+                status = g.Status,
+                progress = g.Progress,
+                expiresIn = g.ExpiresIn
+            });
+        return Json(games);
+    }
+
     // POST: Game/Create
     [HttpPost]
     public IActionResult Create(string? HostName, string? Name, string? Description)
