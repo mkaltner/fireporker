@@ -111,10 +111,7 @@
                         <a href="#" data-bind="click: $root.removePlayer, visible: myPlayer.isHost() && !isHost()" style="color: red;"><i class="glyphicon glyphicon-remove"></i></a>
                     </div>
                 </div>
-                <div>
-                    <h3>Chat</h3>
-                    Coming soon...
-                </div>
+
             </p>
             
         </div>
@@ -221,7 +218,7 @@
 
         this.addStory = function () {
             if (self.storyTitle().length) {
-                self.connection.invoke("AddStory", _gameId, self.storyTitle(), self.storydescription())
+                self.connection.invoke("AddStory", _gameId, self.storyTitle(), self.storyDescription())
                     .catch(function(err) { console.error(err.toString()); });
             } else {
                 alert("Invalid title");
