@@ -144,12 +144,12 @@ public class GameController : Controller
     {
         var games = GameManager.GetPokerGames()
             .OrderByDescending(g => g.Status == "Voting")
-            .ThenByDescending(g => g.Players.Count)
+            .ThenByDescending(g => g.ExpectedVoterCount)
             .Select(g => new
             {
                 key = g.TrackingKey,
                 name = g.Name,
-                playerCount = g.Players.Count,
+                playerCount = g.ExpectedVoterCount,
                 status = g.Status,
                 progress = g.Progress,
                 expiresIn = g.ExpiresIn

@@ -33,12 +33,20 @@ public class PokerGame
             if (CurrentStory == null)
                 return "Idle";
             
-            var votedCount = Players.Count(p => p.CurrentVote != null);
+            var votedCount = HostCanVote 
+                ? Players.Count(p => p.CurrentVote != null)
+                : Players.Count(p => p.CurrentVote != null && p.Id != Host.Id);
             return votedCount > 0 ? "Voting" : "Waiting";
         }
     }
     
-    public int VotedCount => Players.Count(p => p.CurrentVote != null);
+    public int VotedCount => HostCanVote 
+        ? Players.Count(p => p.CurrentVote != null)
+        : Players.Count(p => p.CurrentVote != null && p.Id != Host.Id);
+    
+    public int ExpectedVoterCount => HostCanVote 
+        ? Players.Count
+        : Players.Count - 1; // Exclude host from total when they can't vote
     
     public string Progress
     {
@@ -46,7 +54,7 @@ public class PokerGame
         {
             if (CurrentStory == null)
                 return "—";
-            return $"{VotedCount}/{Players.Count}";
+            return $"{VotedCount}/{ExpectedVoterCount}";
         }
     }
     
