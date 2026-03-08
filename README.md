@@ -5,9 +5,11 @@ A real-time planning poker app for agile teams. Built with ASP.NET Core 8 and Si
 ## Features
 
 - **Real-time voting** — See votes appear instantly via SignalR
-- **Multiple games** — Host multiple concurrent planning sessions
-- **Story management** — Add stories, track estimates
+- **Multiple games** — Host multiple concurrent planning sessions  
+- **Story management** — Add stories, track estimates, optionally link to Jira
+- **Host voting control** — Choose whether the host participates in voting
 - **Host controls** — Clear votes, accept estimates, remove players
+- **Activity dashboard** — View all active games and their voting status
 - **No accounts needed** — Cookie-based sessions, jump right in
 
 ## Quick Start
